@@ -1,5 +1,4 @@
-/work in progress.../
-
+*This project is not actively maintained.*
 
 NanoVG
 ==========
@@ -30,7 +29,9 @@ The first parameter defines flags for creating the renderer.
 - `NVG_ANTIALIAS` means that the renderer adjusts the geometry to include anti-aliasing. If you're using MSAA, you can omit this flags. 
 - `NVG_STENCIL_STROKES` means that the render uses better quality rendering for (overlapping) strokes. The quality is mostly visible on wider strokes. If you want speed, you can omit this flag.
 
-Currently there is an OpenGL back-end for NanoVG: [nanovg_gl.h](/src/nanovg_gl.h) for OpenGL 2.0, OpenGL ES 2.0, OpenGL 3.2 core profile and OpenGL ES 3. The implementation can be chosen using a define as in above example. See the header file and examples for further info.
+Currently there is an OpenGL back-end for NanoVG: [nanovg_gl.h](/src/nanovg_gl.h) for OpenGL 2.0, OpenGL ES 2.0, OpenGL 3.2 core profile and OpenGL ES 3. The implementation can be chosen using a define as in above example. See the header file and examples for further info. 
+
+*NOTE:* The render target you're rendering to must have stencil buffer.
 
 ## Drawing shapes with NanoVG
 
@@ -61,10 +62,10 @@ nvgFill(vg);
 ## Rendering is wrong, what to do?
 
 - make sure you have created NanoVG context using one of the `nvgCreatexxx()` calls
-- make sure you have initialised OpenGL with stencil buffer
+- make sure you have initialised OpenGL with *stencil buffer*
 - make sure you have cleared stencil buffer
 - make sure all rendering calls happen between `nvgBeginFrame()` and `nvgEndFrame()`
-- to eanble more checks for OpenGL errors, add `NVG_DEBUG` flag to `nvgCreatexxx()`
+- to enable more checks for OpenGL errors, add `NVG_DEBUG` flag to `nvgCreatexxx()`
 - if the problem still persists, please report an issue!
 
 ## OpenGL state touched by the backend
@@ -92,6 +93,7 @@ The data for the whole frame is buffered and flushed in `nvgEndFrame()`. The fol
 	glBindVertexArray(arr);
 	glBindBuffer(GL_ARRAY_BUFFER, buf);
 	glBindTexture(GL_TEXTURE_2D, tex);
+	glUniformBlockBinding(... , GLNVG_FRAG_BINDING);
 ```
 
 ## API Reference
@@ -101,14 +103,20 @@ See the header file [nanovg.h](/src/nanovg.h) for API reference.
 ## Ports
 
 - [DX11 port](https://github.com/cmaughan/nanovg) by [Chris Maughan](https://github.com/cmaughan)
-- [bgfx port](https://github.com/bkaradzic/bgfx/tree/master/examples/20-nanovg) by [Branimir Karadžić](https://github.com/bkaradzic) 
+- [Metal port](https://github.com/ollix/MetalNanoVG) by [Olli Wang](https://github.com/olliwang)
+- [bgfx port](https://github.com/bkaradzic/bgfx/tree/master/examples/20-nanovg) by [Branimir Karadžić](https://github.com/bkaradzic)
 
 ## Projects using NanoVG
 
 - [Processing API simulation by vinjn](https://github.com/vinjn/island/blob/master/examples/01-processing/sketch2d.h)
+- [NanoVG for .NET, C# P/Invoke binding](https://github.com/sbarisic/nanovg_dotnet)
 
 ## License
 The library is licensed under [zlib license](LICENSE.txt)
+Fonts used in examples:
+- Roboto licensed under [Apache license](http://www.apache.org/licenses/LICENSE-2.0)
+- Entypo licensed under CC BY-SA 4.0.
+- Noto Emoji licensed under [SIL Open Font License, Version 1.1](http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&id=OFL)
 
 ## Discussions
 [NanoVG mailing list](https://groups.google.com/forum/#!forum/nanovg)
