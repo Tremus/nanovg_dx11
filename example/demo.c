@@ -100,7 +100,7 @@ void drawWindow(NVGcontext* vg, const char* title, float x, float y, float w, fl
 	nvgStrokeColor(vg, nvgRGBA(0,0,0,32));
 	nvgStroke(vg);
 
-	nvgFontSize(vg, 18.0f);
+	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans-bold");
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 
@@ -139,7 +139,7 @@ void drawSearchBox(NVGcontext* vg, const char* text, float x, float y, float w, 
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 	nvgText(vg, x+h*0.55f, y+h*0.55f, cpToUTF8(ICON_SEARCH,icon), NULL);
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,32));
 
@@ -170,7 +170,7 @@ void drawDropDown(NVGcontext* vg, const char* text, float x, float y, float w, f
 	nvgStrokeColor(vg, nvgRGBA(0,0,0,48));
 	nvgStroke(vg);
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,160));
 	nvgTextAlign(vg,NVG_ALIGN_LEFT|NVG_ALIGN_MIDDLE);
@@ -187,7 +187,7 @@ void drawLabel(NVGcontext* vg, const char* text, float x, float y, float w, floa
 {
 	NVG_NOTUSED(w);
 
-	nvgFontSize(vg, 18.0f);
+	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,128));
 
@@ -216,7 +216,7 @@ void drawEditBox(NVGcontext* vg, const char* text, float x, float y, float w, fl
 
 	drawEditBoxBase(vg, x,y, w,h);
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,64));
 	nvgTextAlign(vg,NVG_ALIGN_LEFT|NVG_ALIGN_MIDDLE);
@@ -232,13 +232,13 @@ void drawEditBoxNum(NVGcontext* vg,
 
 	uw = nvgTextBounds(vg, 0,0, units, NULL, NULL);
 
-	nvgFontSize(vg, 18.0f);
+	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,64));
 	nvgTextAlign(vg,NVG_ALIGN_RIGHT|NVG_ALIGN_MIDDLE);
 	nvgText(vg, x+w-h*0.3f,y+h*0.5f,units, NULL);
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,128));
 	nvgTextAlign(vg,NVG_ALIGN_RIGHT|NVG_ALIGN_MIDDLE);
@@ -251,7 +251,7 @@ void drawCheckBox(NVGcontext* vg, const char* text, float x, float y, float w, f
 	char icon[8];
 	NVG_NOTUSED(w);
 
-	nvgFontSize(vg, 18.0f);
+	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans");
 	nvgFillColor(vg, nvgRGBA(255,255,255,160));
 
@@ -264,7 +264,7 @@ void drawCheckBox(NVGcontext* vg, const char* text, float x, float y, float w, f
 	nvgFillPaint(vg, bg);
 	nvgFill(vg);
 
-	nvgFontSize(vg, 40);
+	nvgFontSize(vg, 33);
 	nvgFontFace(vg, "icons");
 	nvgFillColor(vg, nvgRGBA(255,255,255,128));
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
@@ -293,7 +293,7 @@ void drawButton(NVGcontext* vg, int preicon, const char* text, float x, float y,
 	nvgStrokeColor(vg, nvgRGBA(0,0,0,48));
 	nvgStroke(vg);
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans-bold");
 	tw = nvgTextBounds(vg, 0,0, text, NULL, NULL);
 	if (preicon != 0) {
@@ -311,7 +311,7 @@ void drawButton(NVGcontext* vg, int preicon, const char* text, float x, float y,
 		nvgText(vg, x+w*0.5f-tw*0.5f-iw*0.75f, y+h*0.5f, cpToUTF8(preicon,icon), NULL);
 	}
 
-	nvgFontSize(vg, 20.0f);
+	nvgFontSize(vg, 17.0f);
 	nvgFontFace(vg, "sans-bold");
 	nvgTextAlign(vg,NVG_ALIGN_LEFT|NVG_ALIGN_MIDDLE);
 	nvgFillColor(vg, nvgRGBA(0,0,0,160));
@@ -836,6 +836,13 @@ int loadDemoData(NVGcontext* vg, DemoData* data)
 		printf("Could not add font bold.\n");
 		return -1;
 	}
+	data->fontEmoji = nvgCreateFont(vg, "emoji", "../example/NotoEmoji-Regular.ttf");
+	if (data->fontEmoji == -1) {
+		printf("Could not add font emoji.\n");
+		return -1;
+	}
+	nvgAddFallbackFontId(vg, data->fontNormal, data->fontEmoji);
+	nvgAddFallbackFontId(vg, data->fontBold, data->fontEmoji);
 
 	return 0;
 }
@@ -855,7 +862,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 {
 	NVGtextRow rows[3];
 	NVGglyphPosition glyphs[100];
-	const char* text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.";
+	const char* text = "This is longer chunk of text.\n  \n  Would have used lorem ipsum but she    was busy jumping over the lazy dog with the fox and all the men who came to the aid of the party.🎉";
 	const char* start;
 	const char* end;
 	int nrows, i, nglyphs, j, lnum = 0;
@@ -869,7 +876,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 
 	nvgSave(vg);
 
-	nvgFontSize(vg, 18.0f);
+	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans");
 	nvgTextAlign(vg, NVG_ALIGN_LEFT|NVG_ALIGN_TOP);
 	nvgTextMetrics(vg, NULL, NULL, &lineh);
@@ -923,7 +930,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 	if (gutter) {
 		char txt[16];
 		snprintf(txt, sizeof(txt), "%d", gutter);
-		nvgFontSize(vg, 13.0f);
+		nvgFontSize(vg, 12.0f);
 		nvgTextAlign(vg, NVG_ALIGN_RIGHT|NVG_ALIGN_MIDDLE);
 
 		nvgTextBounds(vg, gx,gy, txt, NULL, bounds);
@@ -939,7 +946,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 
 	y += 20.0f;
 
-	nvgFontSize(vg, 13.0f);
+	nvgFontSize(vg, 11.0f);
 	nvgTextAlign(vg, NVG_ALIGN_LEFT|NVG_ALIGN_TOP);
 	nvgTextLineHeight(vg, 1.2f);
 
@@ -1193,8 +1200,8 @@ static void flipHorizontal(unsigned char* image, int w, int h, int stride)
 {
 	int i = 0, j = h-1, k;
 	while (i < j) {
-		unsigned char* ri = &image[i * stride];		
-		unsigned char* rj = &image[j * stride];		
+		unsigned char* ri = &image[i * stride];
+		unsigned char* rj = &image[j * stride];
 		for (k = 0; k < w*4; k++) {
 			unsigned char t = ri[k];
 			ri[k] = rj[k];

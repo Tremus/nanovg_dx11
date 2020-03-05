@@ -58,6 +58,8 @@ float4 D3D11PixelShader_Main(PS_INPUT input) : SV_TARGET
     float scissor = scissorMask(input.fpos);
 #ifdef EDGE_AA
     float strokeAlpha = strokeMask(input.ftcoord);
+    if (strokeAlpha < strokeMult.y)
+        discard;
 #else
     float strokeAlpha = 1.0f;
 #endif
@@ -100,12 +102,6 @@ float4 D3D11PixelShader_Main(PS_INPUT input) : SV_TARGET
 		color *= scissor;
         result = (color * innerCol);
     }
-
-#ifdef EDGE_AA
-    if (strokeAlpha < strokeMult.y)
-        discard;
-#endif
-
     return result;
 }
 
