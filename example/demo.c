@@ -27,7 +27,7 @@
 #define ICON_TRASH 0xE729
 
 //static float minf(float a, float b) { return a < b ? a : b; }
-static float maxf(float a, float b) { return a > b ? a : b; }
+//static float maxf(float a, float b) { return a > b ? a : b; }
 //static float absf(float a) { return a >= 0.0f ? a : -a; }
 static float clampf(float a, float mn, float mx) { return a < mn ? mn : (a > mx ? mx : a); }
 
@@ -100,6 +100,7 @@ void drawWindow(NVGcontext* vg, const char* title, float x, float y, float w, fl
 	nvgStrokeColor(vg, nvgRGBA(0,0,0,32));
 	nvgStroke(vg);
 
+	nvgFontSize(vg, 15.0f);
 	nvgFontSize(vg, 15.0f);
 	nvgFontFace(vg, "sans-bold");
 	nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
@@ -870,8 +871,10 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 	float caretx, px;
 	float bounds[4];
 	float a;
+	const char* hoverText = "Hover your mouse over the text to see calculated caret position.";
 	float gx,gy;
 	int gutter = 0;
+	const char* boxText = "Testing\nsome multiline\ntext.";
 	NVG_NOTUSED(height);
 
 	nvgSave(vg);
@@ -893,7 +896,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 
 			nvgBeginPath(vg);
 			nvgFillColor(vg, nvgRGBA(255,255,255,hit?64:16));
-			nvgRect(vg, x, y, row->width, lineh);
+			nvgRect(vg, x + row->minx, y, row->maxx - row->minx, lineh);
 			nvgFill(vg);
 
 			nvgFillColor(vg, nvgRGBA(255,255,255,255));
@@ -950,12 +953,12 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 	nvgTextAlign(vg, NVG_ALIGN_LEFT|NVG_ALIGN_TOP);
 	nvgTextLineHeight(vg, 1.2f);
 
-	nvgTextBoxBounds(vg, x,y, 150, "Hover your mouse over the text to see calculated caret position.", NULL, bounds);
+	nvgTextBoxBounds(vg, x,y, 150, hoverText, NULL, bounds);
 
 	// Fade the tooltip out when close to it.
-	gx = fabsf((mx - (bounds[0]+bounds[2])*0.5f) / (bounds[0] - bounds[2]));
-	gy = fabsf((my - (bounds[1]+bounds[3])*0.5f) / (bounds[1] - bounds[3]));
-	a = maxf(gx, gy) - 0.5f;
+	gx = clampf(mx, bounds[0], bounds[2]) - mx;
+	gy = clampf(my, bounds[1], bounds[3]) - my;
+	a = sqrtf(gx*gx + gy*gy) / 30.0f;
 	a = clampf(a, 0, 1);
 	nvgGlobalAlpha(vg, a);
 
@@ -969,7 +972,7 @@ void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, 
 	nvgFill(vg);
 
 	nvgFillColor(vg, nvgRGBA(0,0,0,220));
-	nvgTextBox(vg, x,y, 150, "Hover your mouse over the text to see calculated caret position.", NULL);
+	nvgTextBox(vg, x,y, 150, hoverText, NULL);
 
 	nvgRestore(vg);
 }
