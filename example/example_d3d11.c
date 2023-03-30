@@ -70,7 +70,7 @@ HRESULT ResizeWindow(unsigned int x, unsigned int y);
 void initCPUTimer(void);
 double getCPUTime(void);
 
-const char* pszWindowClass = "WindowClass";
+const wchar_t* pszWindowClass = L"WindowClass";
 
 
 // Do the drawing
@@ -248,7 +248,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hIcon			= NULL;
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= "";
+	wcex.lpszMenuName	= L"";
 	wcex.lpszClassName	= pszWindowClass;
 	wcex.hIconSm		= NULL;
 
@@ -271,7 +271,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     rcWin.right += -rcWin.left;
     rcWin.bottom += -rcWin.top;
   
-    hWndMain = CreateWindowEx(0, pszWindowClass, "Nanovg", WS_OVERLAPPEDWINDOW,
+    hWndMain = CreateWindowEx(0, pszWindowClass, L"Nanovg", WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, (int)rcWin.right, (int)rcWin.bottom, NULL, NULL, hInstance, NULL);
 
     if (!hWndMain)
