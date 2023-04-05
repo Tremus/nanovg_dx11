@@ -41,6 +41,7 @@ void nvgDeleteD3D11(struct NVGcontext* ctx);
 // These are additional flags on top of NVGimageFlags.
 enum NVGimageFlagsD3D11 {
 	NVG_IMAGE_NODELETE			= 1<<16,	// Do not delete texture object.
+	NVG_IMAGE_RENDER_TARGET     = 1<<17
 };
 
 // Not done yet.  Simple enough to do though...
@@ -632,6 +633,12 @@ static int D3Dnvg__renderCreateTexture(void* uptr, int type, int w, int h, int i
 			texDesc.MipLevels = 0;
 			texDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 			texDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+		}
+
+		// Allow render to texture / image
+		if (imageFlags & NVG_IMAGE_RENDER_TARGET)
+		{
+			texDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 		}
 	}
 	else
