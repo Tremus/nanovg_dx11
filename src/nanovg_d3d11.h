@@ -19,11 +19,6 @@
 #ifndef NANOVG_D3D11_H
 #define NANOVG_D3D11_H
 
-// Hide nameless struct/union warning for D3D headers
-#pragma warning (disable : 4201)
-#include <d3d11.h>
-#pragma warning (default : 4201)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,12 +30,13 @@ extern "C" {
 // slower, but path overlaps (i.e. self-intersecting or sharp turns) will be drawn just once.
 #define NVG_STENCIL_STROKES 2
 
-struct NVGcontext* nvgCreateD3D11(ID3D11Device* pDevice, int edgeaa);
+// Can't forward declare struct ID3D11Device because Windows typedef it...
+struct NVGcontext* nvgCreateD3D11(void* ID3D11Device_pDevice, int edgeaa);
 void nvgDeleteD3D11(struct NVGcontext* ctx);
 
 // These are additional flags on top of NVGimageFlags.
 enum NVGimageFlagsD3D11 {
-	NVG_IMAGE_NODELETE			= 1<<16,	// Do not delete texture object.
+	NVG_IMAGE_NODELETE          = 1<<16, // Do not delete texture object.
 	NVG_IMAGE_RENDER_TARGET     = 1<<17
 };
 
@@ -62,7 +58,10 @@ void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags);
 #include <math.h>
 #include <assert.h>
 #include "nanovg.h"
+// Hide nameless struct/union warning for D3D headers
+#pragma warning (disable : 4201)
 #include <d3d11.h>
+#pragma warning (default : 4201)
 
 #include "D3D11VertexShader.h"
 #include "D3D11PixelShaderAA.h"
@@ -1416,7 +1415,7 @@ static void D3Dnvg__renderDelete(void* uptr)
 }
 
 
-struct NVGcontext* nvgCreateD3D11(ID3D11Device* pDevice, int flags)
+struct NVGcontext* nvgCreateD3D11(void* ID3D11Device_pDevice, int flags)
 {
 	struct NVGparams params;
 	struct NVGcontext* ctx = NULL;
@@ -1426,8 +1425,8 @@ struct NVGcontext* nvgCreateD3D11(ID3D11Device* pDevice, int flags)
 		goto error;
 	}
 	memset(D3D, 0, sizeof(struct D3DNVGcontext));
-	D3D->pDevice = pDevice;
-	D3D_API_1(pDevice, GetImmediateContext, &D3D->pDeviceContext);
+	D3D->pDevice = (ID3D11Device*)ID3D11Device_pDevice;
+	D3D_API_1(((ID3D11Device*)ID3D11Device_pDevice), GetImmediateContext, &D3D->pDeviceContext);
 
 	memset(&params, 0, sizeof(params));
 	params.renderCreate = D3Dnvg__renderCreate;
