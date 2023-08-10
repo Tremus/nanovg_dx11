@@ -206,6 +206,7 @@ struct D3DNVGcontext {
 	ID3D11Buffer* pVSConstants;
 	ID3D11Buffer* pPSConstants;
 
+    void* userPtr;
 	ID3D11Device* pDevice;
 	ID3D11DeviceContext* pDeviceContext;
 
@@ -294,7 +295,7 @@ static int D3Dnvg__checkError(HRESULT hr, const char* str)
 {
 	if (!SUCCEEDED(hr))
 	{
-		printf("Error %08x after %s\n", hr, str);
+		printf("Error %08x after %s\n", (unsigned)hr, str);
 		return 1;
 	}
 	return 0;
@@ -1426,7 +1427,7 @@ struct NVGcontext* nvgCreateD3D11(void* ID3D11Device_pDevice, int flags)
 	}
 	memset(D3D, 0, sizeof(struct D3DNVGcontext));
 	D3D->pDevice = (ID3D11Device*)ID3D11Device_pDevice;
-	D3D_API_1(((ID3D11Device*)ID3D11Device_pDevice), GetImmediateContext, &D3D->pDeviceContext);
+	D3D_API_1(D3D->pDevice, GetImmediateContext, &D3D->pDeviceContext);
 
 	memset(&params, 0, sizeof(params));
 	params.renderCreate = D3Dnvg__renderCreate;
