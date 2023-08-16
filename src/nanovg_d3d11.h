@@ -63,6 +63,12 @@ void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags);
 #include <d3d11.h>
 #pragma warning (default : 4201)
 
+#if !defined(NVG_MALLOC) && !defined(NVG_REALLOC) && !defined(NVG_FREE)
+#define NVG_MALLOC(size) malloc(size)
+#define NVG_REALLOC(ptr, size) realloc(ptr, size)
+#define NVG_FREE(ptr) free(ptr)
+#endif
+
 #include "D3D11VertexShader.h"
 #include "D3D11PixelShaderAA.h"
 #include "D3D11PixelShader.h"
@@ -239,7 +245,7 @@ static struct D3DNVGtexture* D3Dnvg__allocTexture(struct D3DNVGcontext* D3D)
 		if (D3D->ntextures + 1 > D3D->ctextures) {
 			struct D3DNVGtexture* textures;
 			int ctextures = D3Dnvg__maxi(D3D->ntextures+1, 4) +  D3D->ctextures/2; // 1.5x Overallocate
-			textures = (struct D3DNVGtexture*)realloc(D3D->textures, sizeof(struct D3DNVGtexture)*ctextures);
+			textures = (struct D3DNVGtexture*)NVG_REALLOC(D3D->textures, sizeof(struct D3DNVGtexture)*ctextures);
 			if (textures == NULL) return NULL;
 			D3D->textures = textures;
 			D3D->ctextures = ctextures;
@@ -1117,7 +1123,7 @@ static struct D3DNVGcall* D3Dnvg__allocCall(struct D3DNVGcontext* D3D)
 	if (D3D->ncalls+1 > D3D->ccalls) {
 		struct D3DNVGcall* calls;
 		int ccalls = D3Dnvg__maxi(D3D->ncalls+1, 128) + D3D->ccalls/2; // 1.5x Overallocate
-		calls = (struct D3DNVGcall*)realloc(D3D->calls, sizeof(struct D3DNVGcall) * ccalls);
+		calls = (struct D3DNVGcall*)NVG_REALLOC(D3D->calls, sizeof(struct D3DNVGcall) * ccalls);
 		if (calls == NULL) return NULL;
 		D3D->calls = calls;
 		D3D->ccalls = ccalls;
@@ -1133,7 +1139,7 @@ static int D3Dnvg__allocPaths(struct D3DNVGcontext* D3D, int n)
 	if (D3D->npaths+n > D3D->cpaths) {
 		struct D3DNVGpath* paths;
 		int cpaths = D3Dnvg__maxi(D3D->npaths + n, 128) + D3D->cpaths/2; // 1.5x Overallocate
-		paths = (struct D3DNVGpath*)realloc(D3D->paths, sizeof(struct D3DNVGpath) * cpaths);
+		paths = (struct D3DNVGpath*)NVG_REALLOC(D3D->paths, sizeof(struct D3DNVGpath) * cpaths);
 		if (paths == NULL) return -1;
 		D3D->paths = paths;
 		D3D->cpaths = cpaths;
@@ -1149,7 +1155,7 @@ static int D3Dnvg__allocVerts(struct D3DNVGcontext* D3D, int n)
 	if (D3D->nverts+n > D3D->cverts) {
 		struct NVGvertex* verts;
 		int cverts = D3Dnvg__maxi(D3D->nverts + n, 4096) + D3D->cverts/2; // 1.5x Overallocate
-		verts = (struct NVGvertex*)realloc(D3D->verts, sizeof(struct NVGvertex) * cverts);
+		verts = (struct NVGvertex*)NVG_REALLOC(D3D->verts, sizeof(struct NVGvertex) * cverts);
 		if (verts == NULL) return -1;
 		D3D->verts = verts;
 		D3D->cverts = cverts;
@@ -1165,7 +1171,7 @@ static int D3Dnvg__allocFragUniforms(struct D3DNVGcontext* D3D, int n)
 	if (D3D->nuniforms+n > D3D->cuniforms) {
 		unsigned char* uniforms;
 		int cuniforms = D3Dnvg__maxi(D3D->nuniforms+n, 128) + D3D->cuniforms/2; // 1.5x Overallocate
-		uniforms = (unsigned char*)realloc(D3D->uniforms, structSize * cuniforms);
+		uniforms = (unsigned char*)NVG_REALLOC(D3D->uniforms, structSize * cuniforms);
 		if (uniforms == NULL) return -1;
 		D3D->uniforms = uniforms;
 		D3D->cuniforms = cuniforms;
@@ -1405,14 +1411,14 @@ static void D3Dnvg__renderDelete(void* uptr)
 	// Don't delete the device though.
 	D3D_API_RELEASE(D3D->pDeviceContext);
 
-	free(D3D->textures);
+	NVG_FREE(D3D->textures);
 
-	free(D3D->paths);
-	free(D3D->verts);
-	free(D3D->uniforms);
-	free(D3D->calls);
+	NVG_FREE(D3D->paths);
+	NVG_FREE(D3D->verts);
+	NVG_FREE(D3D->uniforms);
+	NVG_FREE(D3D->calls);
 
-	free(D3D);
+	NVG_FREE(D3D);
 }
 
 
@@ -1420,7 +1426,7 @@ struct NVGcontext* nvgCreateD3D11(void* ID3D11Device_pDevice, int flags)
 {
 	struct NVGparams params;
 	struct NVGcontext* ctx = NULL;
-	struct D3DNVGcontext* D3D = (struct D3DNVGcontext*)malloc(sizeof(struct D3DNVGcontext));
+	struct D3DNVGcontext* D3D = (struct D3DNVGcontext*)NVG_MALLOC(sizeof(struct D3DNVGcontext));
 	if (D3D == NULL)
 	{
 		goto error;
