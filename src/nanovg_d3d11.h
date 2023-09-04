@@ -56,7 +56,6 @@ void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags);
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <assert.h>
 #include "nanovg.h"
 // Hide nameless struct/union warning for D3D headers
 #pragma warning (disable : 4201)
@@ -96,6 +95,8 @@ void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags);
 #define D3D_API_6(p, name, arg1, arg2, arg3, arg4, arg5, arg6) p->lpVtbl->name(p, arg1, arg2, arg3, arg4, arg5, arg6)
 #define D3D_API_RELEASE(p) { if ( (p) ) { (p)->lpVtbl->Release((p)); (p) = NULL; } }
 #endif
+
+#define D3DNVG_ASSERT(cond) (cond) ? (void)0 : __debugbreak()
 
 #pragma pack(push)
 #pragma pack(16)
@@ -924,7 +925,7 @@ static void D3Dnvg__fill(struct D3DNVGcontext* D3D, struct D3DNVGcall* call)
 	for (i = 0; i < npaths; i++)
 	{
 		unsigned int numIndices = ((paths[i].fillCount - 2) * 3);
-		assert(numIndices < D3D->VertexBuffer.MaxBufferEntries);
+		D3DNVG_ASSERT(numIndices < D3D->VertexBuffer.MaxBufferEntries);
 		if (numIndices < D3D->VertexBuffer.MaxBufferEntries)
 		{
 			D3D_API_3(D3D->pDeviceContext, DrawIndexed, numIndices, 0, paths[i].fillOffset);
@@ -972,7 +973,7 @@ static void D3Dnvg__convexFill(struct D3DNVGcontext* D3D, struct D3DNVGcall* cal
 		if (paths[i].fillCount > 2)
 		{
 			unsigned int numIndices = ((paths[i].fillCount - 2) * 3);
-			assert(numIndices < D3D->VertexBuffer.MaxBufferEntries);
+			D3DNVG_ASSERT(numIndices < D3D->VertexBuffer.MaxBufferEntries);
 			if (numIndices < D3D->VertexBuffer.MaxBufferEntries)
 			{
 				D3D_API_3(D3D->pDeviceContext, DrawIndexed, numIndices, 0, paths[i].fillOffset);
