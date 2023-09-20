@@ -140,6 +140,7 @@ struct D3DNVGtexture {
 	int id;
 	ID3D11Texture2D* tex;
 	ID3D11ShaderResourceView* resourceView;
+    ID3D11RenderTargetView* renderTargetView;
 	int width, height;
 	int type;
 	int flags;
@@ -278,6 +279,7 @@ static int D3Dnvg__deleteTexture(struct D3DNVGcontext* D3D, int id)
 			{
 				D3D_API_RELEASE(D3D->textures[i].tex);
 				D3D_API_RELEASE(D3D->textures[i].resourceView);
+                D3D_API_RELEASE(D3D->textures[i].renderTargetView);
 			}
 			memset(&D3D->textures[i], 0, sizeof(D3D->textures[i]));
 			return 1;
