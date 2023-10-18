@@ -157,7 +157,6 @@ static int nvg__maxi(int a, int b) { return a > b ? a : b; }
 static int nvg__clampi(int a, int mn, int mx) { return a < mn ? mn : (a > mx ? mx : a); }
 static float nvg__minf(float a, float b) { return a < b ? a : b; }
 static float nvg__maxf(float a, float b) { return a > b ? a : b; }
-static float nvg__absf(float a) { return a >= 0.0f ? a : -a; }
 static float nvg__signf(float a) { return a >= 0.0f ? 1.0f : -1.0f; }
 static float nvg__clampf(float a, float mn, float mx) { return a < mn ? mn : (a > mx ? mx : a); }
 static float nvg__cross(float dx0, float dy0, float dx1, float dy1) { return dx1*dy0 - dx0*dy1; }
@@ -1019,8 +1018,8 @@ void nvgIntersectScissor(NVGcontext* ctx, float x, float y, float w, float h)
 	ey = state->scissor.extent[1];
 	nvgTransformInverse(invxorm, state->xform);
 	nvgTransformMultiply(pxform, invxorm);
-	tex = ex*nvg__absf(pxform[0]) + ey*nvg__absf(pxform[2]);
-	tey = ex*nvg__absf(pxform[1]) + ey*nvg__absf(pxform[3]);
+	tex = ex*fabsf(pxform[0]) + ey*fabsf(pxform[2]);
+	tey = ex*fabsf(pxform[1]) + ey*fabsf(pxform[3]);
 
 	// Intersect rects.
 	nvg__isectRects(rect, pxform[4]-tex,pxform[5]-tey,tex*2,tey*2, x,y,w,h);
@@ -1311,15 +1310,15 @@ static void nvg__tesselateBezier(NVGcontext* ctx,
 
 	dx = x4 - x1;
 	dy = y4 - y1;
-	d2 = nvg__absf(((x2 - x4) * dy - (y2 - y4) * dx));
-	d3 = nvg__absf(((x3 - x4) * dy - (y3 - y4) * dx));
+	d2 = fabsf(((x2 - x4) * dy - (y2 - y4) * dx));
+	d3 = fabsf(((x3 - x4) * dy - (y3 - y4) * dx));
 
 	if ((d2 + d3)*(d2 + d3) < ctx->tessTol * (dx*dx + dy*dy)) {
 		nvg__addPoint(ctx, x4, y4, type);
 		return;
 	}
 
-/*	if (nvg__absf(x1+x3-x2-x2) + nvg__absf(y1+y3-y2-y2) + nvg__absf(x2+x4-x3-x3) + nvg__absf(y2+y4-y3-y3) < ctx->tessTol) {
+/*	if (fabsf(x1+x3-x2-x2) + fabsf(y1+y3-y2-y2) + fabsf(x2+x4-x3-x3) + fabsf(y2+y4-y3-y3) < ctx->tessTol) {
 		nvg__addPoint(ctx, x4, y4, type);
 		return;
 	}*/
@@ -2093,13 +2092,13 @@ void nvgArc(NVGcontext* ctx, float cx, float cy, float r, float a0, float a1, in
 	// Clamp angles
 	da = a1 - a0;
 	if (dir == NVG_CW) {
-		if (nvg__absf(da) >= NVG_PI*2) {
+		if (fabsf(da) >= NVG_PI*2) {
 			da = NVG_PI*2;
 		} else {
 			while (da < 0.0f) da += NVG_PI*2;
 		}
 	} else {
-		if (nvg__absf(da) >= NVG_PI*2) {
+		if (fabsf(da) >= NVG_PI*2) {
 			da = -NVG_PI*2;
 		} else {
 			while (da > 0.0f) da -= NVG_PI*2;
@@ -2107,9 +2106,9 @@ void nvgArc(NVGcontext* ctx, float cx, float cy, float r, float a0, float a1, in
 	}
 
 	// Split arc into max 90 degree segments.
-	ndivs = nvg__maxi(1, nvg__mini((int)(nvg__absf(da) / (NVG_PI*0.5f) + 0.5f), 5));
+	ndivs = nvg__maxi(1, nvg__mini((int)(fabsf(da) / (NVG_PI*0.5f) + 0.5f), 5));
 	hda = (da / (float)ndivs) / 2.0f;
-	kappa = nvg__absf(4.0f / 3.0f * (1.0f - nvg__cosf(hda)) / nvg__sinf(hda));
+	kappa = fabsf(4.0f / 3.0f * (1.0f - nvg__cosf(hda)) / nvg__sinf(hda));
 
 	if (dir == NVG_CCW)
 		kappa = -kappa;
@@ -2169,8 +2168,8 @@ void nvgRoundedRectVarying(NVGcontext* ctx, float x, float y, float w, float h, 
 		nvgRect(ctx, x, y, w, h);
 		return;
 	} else {
-		float halfw = nvg__absf(w)*0.5f;
-		float halfh = nvg__absf(h)*0.5f;
+		float halfw = fabsf(w)*0.5f;
+		float halfh = fabsf(h)*0.5f;
 		float rxBL = nvg__minf(radBottomLeft, halfw) * nvg__signf(w), ryBL = nvg__minf(radBottomLeft, halfh) * nvg__signf(h);
 		float rxBR = nvg__minf(radBottomRight, halfw) * nvg__signf(w), ryBR = nvg__minf(radBottomRight, halfh) * nvg__signf(h);
 		float rxTR = nvg__minf(radTopRight, halfw) * nvg__signf(w), ryTR = nvg__minf(radTopRight, halfh) * nvg__signf(h);
