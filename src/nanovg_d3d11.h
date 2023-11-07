@@ -37,15 +37,10 @@ void nvgDeleteD3D11(struct NVGcontext* ctx);
 // These are additional flags on top of NVGimageFlags.
 enum NVGimageFlagsD3D11 {
 	NVG_IMAGE_NODELETE          = 1<<16, // Do not delete texture object.
-	NVG_IMAGE_RENDER_TARGET     = 1<<17
+	NVG_IMAGE_RENDER_TARGET     = 1<<17,
+	NVG_IMAGE_USAGE_DYNAMIC     = 1<<18,
+	NVG_IMAGE_USAGE_STAGING     = 1<<19,
 };
-
-// Not done yet.  Simple enough to do though...
-#ifdef IMPLEMENTED_IMAGE_FUNCS
-int nvd3dCreateImageFromHandle(struct NVGcontext* ctx, void* texture, int w, int h, int flags);
-unsigned int nvd3dImageHandle(struct NVGcontext* ctx, int image);
-void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags);
-#endif
 
 #ifdef __cplusplus
 }
@@ -615,6 +610,8 @@ static int D3Dnvg__renderCreateTexture(void* uptr, int type, int w, int h, int i
 	int pixelWidthBytes;
 	HRESULT hr;
 	D3D11_SHADER_RESOURCE_VIEW_DESC viewDesc;
+    D3D11_SUBRESOURCE_DATA subresource;
+    D3D11_SUBRESOURCE_DATA* pSubresource = NULL;
 
 	if (tex == NULL)
 	{
@@ -629,7 +626,6 @@ static int D3Dnvg__renderCreateTexture(void* uptr, int type, int w, int h, int i
 	memset(&texDesc, 0, sizeof(texDesc));
 	texDesc.ArraySize = 1;
 	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	texDesc.CPUAccessFlags = 0;
 	texDesc.MipLevels = 1;
 	if (type == NVG_TEXTURE_RGBA)
 	{
@@ -649,8 +645,19 @@ static int D3Dnvg__renderCreateTexture(void* uptr, int type, int w, int h, int i
 		{
 			texDesc.BindFlags |= D3D11_BIND_RENDER_TARGET;
 		}
+
+        if (imageFlags & NVG_IMAGE_USAGE_DYNAMIC)
+        {
+            texDesc.Usage = D3D11_USAGE_DYNAMIC;
+        }
+		if (imageFlags & NVG_IMAGE_USAGE_STAGING)
+		{
+            texDesc.BindFlags = 0;
+            texDesc.Usage = D3D11_USAGE_STAGING;
+            texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+		}
 	}
-	else
+	else // NVG_TEXTURE_ALPHA
 	{
 		texDesc.Format = DXGI_FORMAT_R8_UNORM;
 		pixelWidthBytes = 1;
@@ -659,31 +666,36 @@ static int D3Dnvg__renderCreateTexture(void* uptr, int type, int w, int h, int i
 	texDesc.Height = tex->height;
 	texDesc.Width = tex->width;
 	texDesc.SampleDesc.Count = 1;
-	texDesc.SampleDesc.Quality = 0;
-	texDesc.Usage = D3D11_USAGE_DEFAULT;
 
-	hr = D3D_API_3(D3D->pDevice, CreateTexture2D, &texDesc, NULL, &tex->tex);
+    if (data != NULL)
+    {
+        subresource.pSysMem = data;
+        subresource.SysMemPitch = pixelWidthBytes * w;
+        subresource.SysMemSlicePitch = 0;
+        pSubresource = &subresource;
+    }
+
+	hr = D3D_API_3(D3D->pDevice, CreateTexture2D, &texDesc, pSubresource, &tex->tex);
 	if (FAILED(hr))
 	{
 		return 0;
 	}
 
-	if (data != NULL)
-	{
-		D3D_API_6(D3D->pDeviceContext, UpdateSubresource, (ID3D11Resource*)tex->tex, 0, NULL, data, tex->width * pixelWidthBytes, (tex->width * tex->height) * pixelWidthBytes);
-	}
+    if (!(imageFlags & NVG_IMAGE_USAGE_STAGING))
+    {
 
-	viewDesc.Format = texDesc.Format;
-	viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	viewDesc.Texture2D.MipLevels = (UINT)-1;
-	viewDesc.Texture2D.MostDetailedMip = 0;
+        viewDesc.Format = texDesc.Format;
+        viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        viewDesc.Texture2D.MipLevels = (UINT)-1;
+        viewDesc.Texture2D.MostDetailedMip = 0;
 
-	D3D_API_3(D3D->pDevice, CreateShaderResourceView, (ID3D11Resource*)tex->tex, &viewDesc, &tex->resourceView);
+        D3D_API_3(D3D->pDevice, CreateShaderResourceView, (ID3D11Resource*)tex->tex, &viewDesc, &tex->resourceView);
 
-	if (data != NULL && texDesc.MipLevels == 0)
-	{
-		D3D_API_1(D3D->pDeviceContext, GenerateMips, tex->resourceView);
-	}
+    }
+    if (data != NULL && texDesc.MipLevels == 0)
+    {
+        D3D_API_1(D3D->pDeviceContext, GenerateMips, tex->resourceView);
+    }
 
 	if (D3Dnvg__checkError(hr, "create tex"))
 		return 0;
@@ -1471,45 +1483,6 @@ void nvgDeleteD3D11(struct NVGcontext* ctx)
 {
 	nvgDeleteInternal(ctx);
 }
-
-#ifdef IMPLEMENTED_IMAGE_FUNCS
-int nvd3dCreateImageFromHandle(struct NVGcontext* ctx, void* textureId, int w, int h, int flags)
-{
-
-	/*struct D3DNVGcontext* gl = (struct D3DNVGcontext*)nvgInternalParams(ctx)->userPtr;
-	struct D3DNVGtexture* tex = D3Dnvg__allocTexture(gl);
-
-	if (tex == NULL) return 0;
-
-	tex->type = NVG_TEXTURE_RGBA;
-	tex->tex = textureId;
-	tex->flags = flags;
-	tex->width = w;
-	tex->height = h;
-
-	return tex->id;
-*/
-	return 0;
-}
-
-unsigned int nvd3dImageHandle(struct NVGcontext* ctx, int image)
-{
-	/*
-	struct D3DNVGcontext* gl = (struct D3DNVGcontext*)nvgInternalParams(ctx)->userPtr;
-	struct D3DNVGtexture* tex = D3Dnvg__findTexture(gl, image);
-	return tex->tex;*/
-	return 0;
-}
-
-void nvd3dImageFlags(struct NVGcontext* ctx, int image, int flags)
-{
-	/*
-	struct D3DNVGcontext* gl = (struct D3DNVGcontext*)nvgInternalParams(ctx)->userPtr;
-	struct D3DNVGtexture* tex = D3Dnvg__findTexture(gl, image);
-	tex->flags = flags;
-	*/
-}
-#endif
 
 #endif //NANOVG_D3D11_IMPLEMENTATION
 #endif //NANOVG_D3D11_H
