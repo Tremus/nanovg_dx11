@@ -309,14 +309,13 @@ static int D3Dnvg__createShader(struct D3DNVGcontext* D3D, struct D3DNVGshader* 
 {
 	ID3D11VertexShader* vert = NULL;
 	ID3D11PixelShader* frag = NULL;
-	HRESULT hr;
 
 	memset(shader, 0, sizeof(*shader));
 
 	// Shader byte code is created at compile time from the .hlsl files.
 	// No need for error checks; shader errors can be fixed in the IDE.
-	hr = D3D_API_4(D3D->pDevice, CreateVertexShader, vshader, vshader_size, NULL, &vert);
-	hr = D3D_API_4(D3D->pDevice, CreatePixelShader, fshader, fshader_size, NULL, &frag);
+	D3D_API_4(D3D->pDevice, CreateVertexShader, vshader, vshader_size, NULL, &vert);
+	D3D_API_4(D3D->pDevice, CreatePixelShader, fshader, fshader_size, NULL, &frag);
 
 	shader->vert = vert;
 	shader->frag = frag;
